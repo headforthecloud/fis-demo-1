@@ -13,7 +13,7 @@ variable "region" {
 }
 
 # General Variables
-variable "resource_suffix" {
+variable "resource_prefix" {
   description = "Suffix for built resources."
   type        = string
   default     = "fis_demo_1"

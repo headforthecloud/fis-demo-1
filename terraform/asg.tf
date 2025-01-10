@@ -1,5 +1,5 @@
 resource "aws_security_group" "ec2_sg" {
-  name        = "${var.resource_suffix}_ec2_sg"
+  name        = "${var.resource_prefix}_ec2_sg"
   description = "Security Group for EC2 instances"
   vpc_id      = aws_vpc.this.id
 }
@@ -36,7 +36,7 @@ resource "aws_vpc_security_group_egress_rule" "ec2_allow_https_out" {
 
 
 resource "aws_launch_template" "this" {
-  name          = "${var.resource_suffix}_lt"
+  name          = "${var.resource_prefix}_lt"
   image_id      = data.aws_ami.amazon_linux_2.id
   instance_type = "t3.nano"
 
@@ -58,8 +58,8 @@ resource "aws_launch_template" "this" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      Project = "${var.resource_suffix}"
-      Name    = "${var.resource_suffix}_ec2"
+      Project = "${var.resource_prefix}"
+      Name    = "${var.resource_prefix}_ec2"
     }
   }
 
@@ -67,7 +67,7 @@ resource "aws_launch_template" "this" {
 }
 
 resource "aws_autoscaling_group" "this" {
-  name = "${var.resource_suffix}_asg"
+  name = "${var.resource_prefix}_asg"
 
   launch_template {
     id      = aws_launch_template.this.id
@@ -83,6 +83,7 @@ resource "aws_autoscaling_group" "this" {
   load_balancers = [aws_elb.this.id]
 
   health_check_type = "ELB"
+  health_check_grace_period = 250
 }
 
 locals {
@@ -96,17 +97,27 @@ locals {
       owner       = "root:root"
       encoding    = "b64"
       content     = filebase64("${path.module}/ec2_files/template.html")
+    },
+    {
+      path        = "/run/myserver/healthcheck.html"
+      permissions = "0644"
+      owner       = "root:root"
+      encoding    = "b64"
+      content     = filebase64("${path.module}/ec2_files/healthcheck.html")
     }
   ],
   runcmd = [
     "yum update -y",
     "yum install -y httpd",
-    "systemctl start httpd",
-    "systemctl enable httpd",
+    "systemctl stop httpd",
     "export ec2_id=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)",
     "export ec2_name=$(curl -s http://169.254.169.254/latest/meta-data/tags/instance/Name)",
     "export ec2_az=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone/)",
-    "envsubst < /run/myserver/template.html > /var/www/html/index.html"
+    "envsubst < /run/myserver/template.html > /var/www/html/index.html",
+    "envsubst < /run/myserver/healthcheck.html > /var/www/html/healthcheck.html",
+    "sleep 400",
+    "systemctl start httpd",
+    "systemctl enable httpd",
   ],
 })}
   END
