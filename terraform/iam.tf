@@ -65,7 +65,7 @@ resource "aws_iam_policy" "cloudwatch_logs_policy" {
           "logs:Create*",
           "logs:Put*"
         ],
-        Resource = [ "*" ]
+        Resource = ["*"]
       }
     ]
   })

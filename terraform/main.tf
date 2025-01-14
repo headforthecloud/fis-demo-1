@@ -16,7 +16,7 @@ provider "aws" {
   default_tags {
     tags = {
       Project = var.resource_prefix
-      Repo = "fis-demo-1"
+      Repo    = "fis-demo-1"
     }
   }
 }
