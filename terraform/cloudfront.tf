@@ -2,6 +2,9 @@ data "aws_cloudfront_response_headers_policy" "simpleCORS" {
   name = "Managed-CORS-With-Preflight"
 }
 
+data "aws_cloudfront_cache_policy" "cache_disabled" {
+  name = "Managed-CachingDisabled"
+}
 resource "aws_cloudfront_distribution" "cf_dist" {
   enabled     = true
   price_class = "PriceClass_100"
@@ -21,14 +24,16 @@ resource "aws_cloudfront_distribution" "cf_dist" {
     cached_methods         = ["GET", "HEAD", "OPTIONS"]
     target_origin_id       = aws_elb.this.dns_name
     viewer_protocol_policy = "redirect-to-https"
-    response_headers_policy_id = data.aws_cloudfront_response_headers_policy.simpleCORS.id  
-    forwarded_values {
-      headers      = []
-      query_string = true
-      cookies {
-        forward = "all"
-      }
-    }
+
+    cache_policy_id            = data.aws_cloudfront_cache_policy.cache_disabled.id
+    response_headers_policy_id = data.aws_cloudfront_response_headers_policy.simpleCORS.id
+    # forwarded_values {
+    #   headers      = []
+    #   query_string = true
+    #   cookies {
+    #     forward = "all"
+    #   }
+    # }
   }
   restrictions {
     geo_restriction {

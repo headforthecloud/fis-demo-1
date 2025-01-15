@@ -5,7 +5,7 @@ resource "aws_vpc" "this" {
   enable_dns_hostnames = true
   enable_dns_support   = true
   tags = {
-    Name = "vpc_${replace(var.resource_suffix, "-", "_")}"
+    Name = "vpc_${replace(var.resource_prefix, "-", "_")}"
   }
 }
 
@@ -16,7 +16,7 @@ resource "aws_subnet" "public" {
   cidr_block              = local.subnet_cidr_ranges[count.index]
   map_public_ip_on_launch = true
   tags = {
-    Name = replace("public_subnet_${count.index}_${var.resource_suffix}", "-", "_")
+    Name = replace("public_subnet_${count.index}_${var.resource_prefix}", "-", "_")
     az   = data.aws_availability_zones.available_azs.names[count.index]
   }
 }
@@ -24,7 +24,7 @@ resource "aws_subnet" "public" {
 resource "aws_internet_gateway" "this" {
   vpc_id = aws_vpc.this.id
   tags = {
-    Name = "igw_${var.resource_suffix}"
+    Name = "igw_${var.resource_prefix}"
   }
 }
 
@@ -35,7 +35,7 @@ resource "aws_route_table" "public" {
     gateway_id = aws_internet_gateway.this.id
   }
   tags = {
-    Name = "igw_route_table_${var.resource_suffix}"
+    Name = "igw_route_table_${var.resource_prefix}"
   }
 }
 

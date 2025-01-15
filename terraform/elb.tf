@@ -1,5 +1,5 @@
 resource "aws_security_group" "elb_sg" {
-  name        = "${var.resource_suffix}_elb_sg"
+  name        = "${var.resource_prefix}_elb_sg"
   description = "Security Group for the ELB"
   vpc_id      = aws_vpc.this.id
 }
@@ -25,7 +25,7 @@ resource "aws_vpc_security_group_egress_rule" "elb_allow_http_out" {
 }
 
 resource "aws_elb" "this" {
-  name    = replace("${var.resource_suffix}-elb", "_", "-")
+  name    = replace("${var.resource_prefix}-elb", "_", "-")
   subnets = aws_subnet.public.*.id
 
   security_groups = [aws_security_group.elb_sg.id]
@@ -38,15 +38,15 @@ resource "aws_elb" "this" {
   }
 
   health_check {
-    target              = "HTTP:80/"
+    target              = "HTTP:80/healthcheck.html"
     interval            = 5
     timeout             = 2
-    healthy_threshold   = 2
+    healthy_threshold   = 4
     unhealthy_threshold = 2
   }
 
   tags = {
-    Name = "${var.resource_suffix}_elb"
+    Name = "${var.resource_prefix}_elb"
   }
 
   depends_on = [aws_security_group.elb_sg]
