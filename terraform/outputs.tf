@@ -12,3 +12,8 @@ output "template_url" {
   description = "Console access URL for the FIS template"
   value       = "https://${var.region}.console.aws.amazon.com/fis/home?region=${var.region}#ExperimentTemplateDetails:ExperimentTemplateId=${aws_fis_experiment_template.this.id}"
 }
+
+output "dashboard_url" {
+  description = "Console access URL for the CloudWatch dashboard"
+  value       = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards/dashboard/${aws_cloudwatch_dashboard.this.id}"
+}
